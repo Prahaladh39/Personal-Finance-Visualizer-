@@ -7,15 +7,16 @@ function isValidObjectId(id) {
 }
 router.post("/transactions", async (req, res) => {
   try {
-    const { Title, amount, date, description } = req.body;
+    const { Title, category, amount, date, description } = req.body;
 
-    if (!Title || !amount || !date || !description) {
+    if (!Title || !category || !amount || !date || !description) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
     const db = getDB();
     const result = await db.collection("transactions").insertOne({
       Title,
+      category,
       amount,
       date,
       description,
@@ -91,7 +92,5 @@ router.put("/transactions/:id", async (req, res) => {
     res.status(500).json({ message: "Error updating transaction" });
   }
 });
-
-module.exports = router;
 
 module.exports = router;

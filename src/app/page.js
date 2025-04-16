@@ -1,13 +1,22 @@
 "use client";
-import AddTransactionForm from "@/components/AddTransactionForm";
-import TransactionsList from "@/components/TransactionList";
-import Chart from "@/components/Chart";
+import dynamic from "next/dynamic";
+const AddTransactionForm = dynamic(
+  () => import("@/components/AddTransactionForm"),
+  {
+    ssr: false,
+  }
+);
+const TransactionsList = dynamic(() => import("@/components/TransactionList"), {
+  ssr: false,
+});
+const Chart = dynamic(() => import("@/components/Chart"), {
+  ssr: false,
+});
 import "./App.css";
 import { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -98,11 +107,9 @@ export default function Home() {
                 </div>
               </section>
               <main className="p-4">
-                <center>
-                  <h1 className="text-2xl font-semibold mb-4" id="test">
-                    💸 Add New Transaction
-                  </h1>
-                </center>
+                <div className="full-line-divider">
+                  <h1> 💸 Add New Transaction</h1>
+                </div>
                 <AddTransactionForm />
                 <TransactionsList />
               </main>

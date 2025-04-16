@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 export default function AddTransactionForm() {
   const [formData, setFormData] = useState({
     Title: "",
+    category: "",
     amount: "",
     date: "",
     description: "",
@@ -69,6 +70,22 @@ export default function AddTransactionForm() {
         value={formData.Title}
         onChange={handleChange}
       />
+      <div className="flex flex-col gap-1">
+        <select
+          value={formData.category}
+          onChange={(e) =>
+            setFormData({ ...formData, category: e.target.value })
+          }
+          className="p-2 rounded-md border"
+        >
+          <option value="">Select Category</option>
+          <option value="Food">Food</option>
+          <option value="Travel">Travel</option>
+          <option value="Shopping">Shopping</option>
+          <option value="Bills">Bills</option>
+          <option value="Others">Others</option>
+        </select>
+      </div>
       <Input
         type="text"
         name="amount"

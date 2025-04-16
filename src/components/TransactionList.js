@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-
 export default function TransactionsList() {
   const [transactions, setTransactions] = useState([]);
   const [editId, setEditId] = useState(null);
@@ -77,9 +76,9 @@ export default function TransactionsList() {
 
   return (
     <div className="max-w-3xl mx-auto mt-10 space-y-4">
-      <center>
-        <h1 className="text-2xl font-semibold mb-4">Transactions</h1>
-      </center>
+      <div className="full-line-divider">
+        <h1>Transactions</h1>
+      </div>
       {transactions.map((tx) =>
         editId === tx._id ? (
           <div
