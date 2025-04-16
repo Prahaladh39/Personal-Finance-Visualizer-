@@ -10,6 +10,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { PieChart, Pie, Cell, Legend } from "recharts";
+import { Card, CardContent } from "@/components/ui/card";
 const renderCustomizedLabel = ({ percent, name }) =>
   `${name} ${(percent * 100).toFixed(0)}%`;
 const COLORS = [
@@ -24,6 +25,8 @@ const Chart = () => {
   const [transactions, setTransactions] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
   const [totalExpense, setTotalExpense] = useState(0);
+  const [insights, setInsights] = useState(null);
+  const [data, setData] = useState([]);
   useEffect(() => {
     // Fetch transactions
     fetch("http://localhost:5000/api/transactions")
@@ -95,8 +98,48 @@ const Chart = () => {
       (a, b) => new Date(`1 ${a.month}`) - new Date(`1 ${b.month}`)
     );
   };
+  useEffect(() => {
+    const fetchData = async () => {
+      const budgetRes = await fetch("http://localhost:5000/api/budgets");
+      const budgets = await budgetRes.json();
 
+      const transactionRes = await fetch(
+        "http://localhost:5000/api/transactions"
+      );
+      const transactions = await transactionRes.json();
+
+      const categoryTotals = {};
+      transactions.forEach((t) => {
+        categoryTotals[t.category] =
+          (categoryTotals[t.category] || 0) + parseFloat(t.amount);
+      });
+
+      const combinedData = budgets.map((b) => ({
+        category: b.category,
+        budget: b.budget,
+        spent: categoryTotals[b.category] || 0,
+      }));
+
+      setData(combinedData);
+    };
+
+    fetchData();
+  }, []);
   const monthlyExpenses = getMonthlyExpenses(transactions);
+  useEffect(() => {
+    const fetchInsights = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/insights");
+        const data = await res.json();
+        setInsights(data);
+      } catch (err) {
+        console.error("Error fetching insights:", err);
+      }
+    };
+    fetchInsights();
+  }, []);
+
+  if (!insights) return <p className="text-center mt-4">Loading insights...</p>;
 
   return (
     <>
@@ -155,6 +198,9 @@ const Chart = () => {
           </ResponsiveContainer>
         </div>
       </div>
+      <div className="full-line-divider">
+        <h1>Dashboard</h1>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
         {/* 💰 Total Expenses Card */}
         <div className="bg-blue-100 p-4 rounded-2xl shadow-md text-center">
@@ -194,6 +240,45 @@ const Chart = () => {
           </p>
         </div>
       </div>
+      <div className="w-full p-4">
+        <h2 className="text-xl font-bold mb-4 text-center">Budget vs Actual</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="category" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="budget" fill="#82ca9d" name="Budget" />
+            <Bar dataKey="spent" fill="#8884d8" name="Spent" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <Card className="w-full max-w-3xl mx-auto mt-6 p-4 shadow-lg rounded-xl border">
+        <CardContent>
+          <h2 className="text-2xl font-bold mb-4 text-center">
+            Spending Insights 💡
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-800">
+            <div className="bg-gray-100 p-3 rounded-lg">
+              <p className="font-semibold">Total Spent This Month:</p>
+              <p>₹{insights.totalSpentThisMonth}</p>
+            </div>
+            <div className="bg-gray-100 p-3 rounded-lg">
+              <p className="font-semibold">Highest Spending Category:</p>
+              <p>{insights.highestCategory}</p>
+            </div>
+            <div className="bg-gray-100 p-3 rounded-lg">
+              <p className="font-semibold">Lowest Spending Category:</p>
+              <p>{insights.lowestCategory}</p>
+            </div>
+            <div className="bg-gray-100 p-3 rounded-lg">
+              <p className="font-semibold">Most Frequent Category:</p>
+              <p>{insights.mostFrequentCategory}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </>
   );
 };

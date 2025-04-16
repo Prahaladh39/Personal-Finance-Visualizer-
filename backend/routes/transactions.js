@@ -92,5 +92,82 @@ router.put("/transactions/:id", async (req, res) => {
     res.status(500).json({ message: "Error updating transaction" });
   }
 });
+router.post("/budgets", async (req, res) => {
+  const db = getDB(); // ✅ Fixed function name
+  const { category, budget } = req.body;
 
+  if (!category || !budget) {
+    return res.status(400).json({ error: "Category and budget are required" });
+  }
+
+  try {
+    const result = await db.collection("budgets").insertOne({
+      category,
+      budget: parseFloat(budget),
+      createdAt: new Date(),
+    });
+    res.status(201).json({ message: "Budget saved", id: result.insertedId });
+  } catch (err) {
+    console.error("Budget insert error:", err);
+    res.status(500).json({ error: "Failed to save budget" });
+  }
+});
+// GET route to fetch all budgets
+router.get("/budgets", async (req, res) => {
+  try {
+    const db = getDB(); // ✅ make sure it's getDB not getDb
+    const budgets = await db.collection("budgets").find().toArray();
+    res.status(200).json(budgets);
+  } catch (err) {
+    console.error("Fetch Budgets Error:", err);
+    res.status(500).json({ message: "Failed to fetch budgets" });
+  }
+});
+router.get("/insights", async (req, res) => {
+  try {
+    const db = getDB();
+    const transactions = await db.collection("transactions").find().toArray();
+
+    const thisMonth = new Date().getMonth();
+    const monthlyTransactions = transactions.filter((t) => {
+      const txnDate = new Date(t.date);
+      return txnDate.getMonth() === thisMonth;
+    });
+
+    let total = 0;
+    const categorySpending = {};
+    const categoryCount = {};
+
+    for (let t of monthlyTransactions) {
+      const cat = t.category;
+      const amt = parseFloat(t.amount);
+      total += amt;
+
+      categorySpending[cat] = (categorySpending[cat] || 0) + amt;
+      categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+    }
+
+    const categories = Object.keys(categorySpending);
+
+    const highestCategory = categories.reduce((a, b) =>
+      categorySpending[a] > categorySpending[b] ? a : b
+    );
+    const lowestCategory = categories.reduce((a, b) =>
+      categorySpending[a] < categorySpending[b] ? a : b
+    );
+    const mostFrequentCategory = Object.keys(categoryCount).reduce((a, b) =>
+      categoryCount[a] > categoryCount[b] ? a : b
+    );
+
+    res.json({
+      totalSpentThisMonth: total,
+      highestCategory,
+      lowestCategory,
+      mostFrequentCategory,
+    });
+  } catch (error) {
+    console.error("Insights Error:", error);
+    res.status(500).json({ message: "Error fetching insights" });
+  }
+});
 module.exports = router;

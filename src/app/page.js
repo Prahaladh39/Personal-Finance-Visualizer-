@@ -12,6 +12,10 @@ const TransactionsList = dynamic(() => import("@/components/TransactionList"), {
 const Chart = dynamic(() => import("@/components/Chart"), {
   ssr: false,
 });
+const BudgetForm = dynamic(() => import("@/components/BudgetForm"), {
+  ssr: false,
+});
+
 import "./App.css";
 import { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
@@ -112,6 +116,7 @@ export default function Home() {
                 </div>
                 <AddTransactionForm />
                 <TransactionsList />
+                <BudgetForm />
               </main>
             </>
           }
