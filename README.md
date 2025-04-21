@@ -30,7 +30,7 @@ A full-stack web application to track, visualize, and manage personal finances. 
 
 ---
 ## 🧑‍💻 Getting Started
-git clone https://github.com/your-username/personal-finance-visualizer.git
+git clone https://github.com/Prahaladh39/Personal-Finance-Visualizer-.git
 cd personal-finance-visualizer
 
 ## Set Up the Backend
